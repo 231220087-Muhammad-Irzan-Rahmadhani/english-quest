@@ -1,0 +1,9 @@
+# Teknologi
+
+English Quest dikembangkan menggunakan teknologi berikut:
+- HTML untuk struktur halaman aplikasi
+- CSS untuk mengatur tampilan dan desain
+- JavaScript untuk mengelola interaksi dan logika aplikasi
+
+Aplikasi ini bersifat statis sehingga dapat di-hosting menggunakan layanan
+seperti Netlify atau GitHub Pages.
