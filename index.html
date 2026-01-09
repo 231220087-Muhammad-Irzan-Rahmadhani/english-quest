@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🌈 English Quest 🌈</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    :root { --primary: #ff85a1; --secondary: #a2d2ff; --bg: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%); --accent: #ffca28; }
+    body { font-family: 'Quicksand', sans-serif; background: var(--bg); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; overflow-x: hidden; }
+    .quiz-container { background: white; padding: 2rem; border-radius: 40px; box-shadow: 0 20px 50px rgba(0,0,0,0.1); width: 440px; text-align: center; position: relative; z-index: 10; max-height: 95vh; overflow-y: auto; }
+    .hidden { display: none !important; }
+    .btn { background: var(--primary); color: white; border: none; padding: 12px 25px; margin: 8px; cursor: pointer; border-radius: 25px; font-weight: bold; font-size: 1.1rem; transition: 0.3s; box-shadow: 0 5px 0 #e6738e; width: 85%; }
+    .btn:hover { transform: scale(1.05); }
+
+    /* --- WARNA KHUSUS LEVEL --- */
+    .btn-lvl1 { background: #ff85a1 !important; box-shadow: 0 5px 0 #e6738e !important; } /* Pink */
+    .btn-lvl2 { background: #a2d2ff !important; box-shadow: 0 5px 0 #89b8e6 !important; } /* Blue */
+    .btn-lvl3 { background: #ffca28 !important; box-shadow: 0 5px 0 #e6b822 !important; } /* Amber */
+    .btn-lvl4 { background: #c0a2ff !important; box-shadow: 0 5px 0 #a289e6 !important; } /* Purple */
+
+    /* --- WARNA KHUSUS RANKING (TEAL) --- */
+    .btn-rank { background: #4db6ac !important; box-shadow: 0 5px 0 #00897b !important; }
+    /* -------------------------- */
+
+    .btn-story { background: var(--accent); box-shadow: 0 5px 0 #e6b822; }
+    .book-page { background: #fffdf5; border: 2px solid #f3e5ab; border-radius: 15px; padding: 25px; min-height: 280px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; line-height: 1.6; color: #444; position: relative; box-shadow: inset 0 0 10px rgba(0,0,0,0.05); text-align: left; }
+    .page-number { position: absolute; bottom: 10px; right: 20px; font-size: 0.8rem; color: #999; }
+    .slider-controls { display: flex; justify-content: space-between; margin-top: 15px; gap: 10px; }
+    .nav-btn { background: #eee; border: none; padding: 10px 20px; border-radius: 15px; cursor: pointer; font-weight: bold; flex: 1; }
+    .rank-section { margin-top: 15px; text-align: left; background: #f9f9f9; padding: 12px; border-radius: 20px; border: 1px solid #eee; margin-bottom: 10px; }
+    .rank-title { font-weight: bold; color: #00897b; border-bottom: 2px solid #b2dfdb; margin-bottom: 8px; font-size: 1rem; }
+    .info-box { background: #f0f8ff; border: 2px solid #a2d2ff; border-radius: 15px; padding: 10px; margin: 10px auto; width: 85%; font-size: 0.9rem; }
+    .avatar-item { font-size: 2.5rem; cursor: pointer; padding: 5px; border-radius: 15px; border: 2px solid transparent; transition: 0.3s; }
+    .avatar-item.active { border-color: var(--primary); background: #fff0f3; transform: scale(1.2); }
+    .badge { filter: grayscale(1); opacity: 0.3; font-size: 1.5rem; transition: 0.5s; }
+    .badge.unlocked { filter: grayscale(0); opacity: 1; transform: scale(1.2); }
+    #timer-display { font-family: 'Fredoka One'; color: var(--primary); font-size: 2rem; }
+  </style>
+</head>
+<body>
+
+<audio id="bgMusic" loop><source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" type="audio/mpeg"></audio>
+<audio id="correctSound"><source src="https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3" type="audio/mpeg"></audio>
+<audio id="wrongSound"><source src="https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3" type="audio/mpeg"></audio>
+
+<div class="quiz-container">
+  <div id="home-screen">
+    <div id="selected-avatar-display" style="font-size: 4rem;">🐱</div>
+    <h1 style="font-family: 'Fredoka One'; color: var(--primary); margin: 0;">English Quest</h1>
+    <div class="info-box">
+      <div style="font-weight: bold; color: #555;">🌟 Word of the Day</div>
+      <div id="word-display" style="font-style: italic; color: var(--primary);">Loading...</div>
+    </div>
+    <div class="avatar-box" style="display:flex; justify-content:center; gap:10px; margin:10px 0;">
+      <span class="avatar-item active" onclick="setAvatar('🐱', this)">🐱</span>
+      <span class="avatar-item" onclick="setAvatar('🐰', this)">🐰</span>
+      <span class="avatar-item" onclick="setAvatar('🦊', this)">🦊</span>
+      <span class="avatar-item" onclick="setAvatar('🤖', this)">🤖</span>
+    </div>
+    <button class="btn" onclick="goToLevelSelect()">START QUIZ 🎮</button>
+    <button class="btn btn-story" onclick="goToStoryMenu()">READ BOOKS 📖</button>
+    <button class="btn btn-rank" onclick="showRanking()">RANKING 🏆</button>
+    <button class="btn" style="background:#bbb; box-shadow: 0 5px 0 #999;" onclick="toggleCredits()">CREDITS ✨</button>
+    <div class="badge-container" style="display:flex; justify-content:center; gap:10px; margin-top:10px;">
+      <span class="badge" title="Level 1">🎨</span><span class="badge" title="Level 2">🐶</span><span class="badge" title="Level 3">🏃</span><span class="badge" title="Level 4">👑</span>
+    </div>
+  </div>
+
+  <div id="story-menu" class="hidden">
+    <h2 style="font-family: 'Fredoka One'; color: var(--accent);">Library 📚</h2>
+    <button class="btn btn-story" onclick="openBook(0)">Cinderella 👸</button>
+    <button class="btn btn-story" onclick="openBook(1)">The Little Mermaid 🧜‍♀️</button>
+    <p onclick="showHome()" style="cursor:pointer; color: #999; margin-top: 20px;">⬅️ Back to Menu</p>
+  </div>
+
+  <div id="story-reader" class="hidden">
+    <h2 id="story-title" style="font-family: 'Fredoka One'; color: var(--accent);">Title</h2>
+    <div class="book-page">
+      <div id="page-content">Text...</div>
+      <div class="page-number" id="page-num-display">Page 1</div>
+    </div>
+    <div class="slider-controls">
+      <button class="nav-btn" onclick="prevPage()">⬅️ Prev</button>
+      <button class="nav-btn" onclick="nextPage()">Next ➡️</button>
+    </div>
+    <button class="btn" style="margin-top:20px; background:#bbb;" onclick="goToStoryMenu()">Close Book</button>
+  </div>
+
+  <div id="rank-screen" class="hidden">
+    <h2 style="font-family: 'Fredoka One'; color: #00897b;">Leaderboard 🏆</h2>
+    <div id="rank-content" style="max-height: 400px; overflow-y: auto; padding: 5px;"></div>
+    <button class="btn" onclick="showHome()">Back 🏠</button>
+  </div>
+
+  <div id="level-select" class="hidden">
+    <h2 style="font-family: 'Fredoka One'; color: var(--secondary);">Levels</h2>
+    <button class="btn btn-lvl1" onclick="startStudy(1)">Level 1: Colors 🎨</button>
+    <button class="btn btn-lvl2" onclick="startStudy(2)">Level 2: Animals 🐶</button>
+    <button class="btn btn-lvl3" onclick="startStudy(3)">Level 3: Actions 🏃</button>
+    <button class="btn btn-lvl4" onclick="startStudy(4)">Level 4: Master 👑</button>
+    <p onclick="showHome()" style="cursor:pointer; color: #999;">⬅️ Back</p>
+  </div>
+
+  <div id="study-screen" class="hidden">
+    <h2 style="font-family: 'Fredoka One'; color: var(--primary);">Study Mode 📚</h2>
+    <div style="background: #fff5f7; border: 3px dashed var(--primary); border-radius: 20px; padding: 20px; margin: 15px 0;">
+      <div id="flash-emoji" style="font-size: 4rem;"></div>
+      <h2 id="flash-word" style="color: #444; margin: 10px 0;"></h2>
+    </div>
+    <button class="btn" id="study-next-btn" onclick="nextFlashcard()">Next Card ➡️</button>
+  </div>
+
+  <div id="quiz-area" class="hidden">
+    <div id="timer-display">10</div>
+    <div id="image-placeholder" style="font-size: 4rem; margin-top: 10px;"></div>
+    <h3 id="question-text" style="color: #555;"></h3>
+    <div id="options-container"></div>
+  </div>
+
+  <div id="result-area" class="hidden">
+    <div id="result-emoji" style="font-size: 5rem;">🏆</div>
+    <h2 id="result-title" style="font-family: 'Fredoka One'; color: var(--primary);">Finish!</h2>
+    <h3>Score: <span id="score-val">0</span></h3>
+    <input type="text" id="playerName" placeholder="Your Name" style="padding:10px; border-radius:10px; border:1px solid #ddd; width:80%;"><br>
+    <button class="btn" onclick="saveScore()">SAVE & MENU 🏠</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="credits-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.3); backdrop-filter:blur(8px); display:none; justify-content:center; align-items:center; z-index:1000;">
+  <div style="background:white; padding:2rem; border-radius:30px; text-align:center; width:300px;">
+    <h2>Developer</h2>
+    <p>✨ Azra Auliya Putri, Azni Kamila, Nia Ramadhani, M.Irzan Rahmadhani & Iqbal Syafra Dilla ✨</p>
+    <button class="btn" onclick="toggleCredits()">Close</button>
+  </div>
+</div>
+
+<script>
+  const allLevels = {
+    1: [{q:"Banana?", a:["Yellow","Red","Blue"], c:"Yellow", i:"🍌"}, {q:"Sky?", a:["Blue","Green","Red"], c:"Blue", i:"☁️"}, {q:"Apple?", a:["Red","Yellow","Black"], c:"Red", i:"🍎"}, {q:"Grass?", a:["Green","Pink","Blue"], c:"Green", i:"🌱"}, {q:"Milk?", a:["White","Brown","Grey"], c:"White", i:"🥛"}, {q:"Choco?", a:["Brown","Pink","White"], c:"Brown", i:"🍫"}, {q:"Orange?", a:["Orange","Blue","Green"], c:"Orange", i:"🍊"}, {q:"Grape?", a:["Purple","Red","Yellow"], c:"Purple", i:"🍇"}, {q:"Coal?", a:["Black","White","Blue"], c:"Black", i:"🌑"}, {q:"Flamingo?", a:["Pink","Green","Purple"], c:"Pink", i:"🦩"}],
+    2: [{q:"Long neck?", a:["Giraffe","Cat","Lion"], c:"Giraffe", i:"🦒"}, {q:"King?", a:["Lion","Ant","Dog"], c:"Lion", i:"🦁"}, {q:"Meow?", a:["Cat","Bird","Fish"], c:"Cat", i:"🐱"}, {q:"Woof?", a:["Dog","Horse","Tiger"], c:"Dog", i:"🐶"}, {q:"Trunk?", a:["Elephant","Mouse","Snake"], c:"Elephant", i:"🐘"}, {q:"Swim?", a:["Fish","Rabbit","Monkey"], c:"Fish", i:"🐟"}, {q:"Honey?", a:["Bear","Wolf","Cat"], c:"Bear", i:"🐻"}, {q:"8 Legs?", a:["Spider","Ant","Bee"], c:"Spider", i:"🕷️"}, {q:"Jump?", a:["Kangaroo","Cow","Pig"], c:"Kangaroo", i:"🦘"}, {q:"Shell?", a:["Turtle","Rabbit","Cheetah"], c:"Turtle", i:"🐢"}],
+    3: [{q:"Legs to?", a:["Run","Eat","See"], c:"Run", i:"🏃"}, {q:"Fins to?", a:["Swim","Fly","Read"], c:"Swim", i:"🐟"}, {q:"Wings to?", a:["Fly","Walk","Talk"], c:"Fly", i:"🐦"}, {q:"Eyes to?", a:["See","Hear","Smell"], c:"See", i:"👀"}, {q:"Ears to?", a:["Hear","Taste","Run"], c:"Hear", i:"👂"}, {q:"Teeth to?", a:["Eat","Sing","Jump"], c:"Eat", i:"🦷"}, {q:"Pencil to?", a:["Write","Eat","Drink"], c:"Write", i:"✏️"}, {q:"Book to?", a:["Read","Play","Swim"], c:"Read", i:"📖"}, {q:"Water to?", a:["Drink","Write","See"], c:"Drink", i:"💧"}, {q:"Listen to?", a:["Listen","See","Eat"], c:"Listen", i:"🎧"}],
+    4: [{q:"Opposite Big?", a:["Small","Huge","Fast"], c:"Small", i:"🐁"}, {q:"Opposite Hot?", a:["Cold","Dry","Warm"], c:"Cold", i:"❄️"}, {q:"Fly plane?", a:["Pilot","Chef","Doctor"], c:"Pilot", i:"👨‍✈️"}, {q:"Treat sick?", a:["Doctor","Teacher","Farmer"], c:"Doctor", i:"👨‍⚕️"}, {q:"7 Days?", a:["Week","Month","Year"], c:"Week", i:"📅"}, {q:"Japan?", a:["Tokyo","Seoul","Paris"], c:"Tokyo", i:"🇯🇵"}, {q:"Sun rises?", a:["East","West","South"], c:"East", i:"🌅"}, {q:"Big Water?", a:["Ocean","River","Pond"], c:"Ocean", i:"🌊"}, {q:"Planet?", a:["Mars","Moon","Sun"], c:"Mars", i:"🚀"}, {q:"Dog baby?", a:["Puppy","Kitten","Calf"], c:"Puppy", i:"🐶"}]
+  };
+
+  const books = [
+    {
+      title: "Cinderella 👸",
+      pages: [
+        "The story of Cinderella tells of a kindhearted young woman who was treated cruelly by her stepmother and sisters, but, never the less, kept a humble attitude.",
+        "One day, the king decided to throw a ball and invited all the young maidens in the kingdom. While Cinderella's sisters made her help them get ready for the ball, not once did they ask her if she would like to go with them.",
+        "When they left, her Fairy Godmother appeared and helped Cinderella go to the ball with a bit of magic that would only last until midnight. At the ball, Cinderella caught the eye of the prince, and they danced all night.",
+        "When midnight came, Cinderella had to leave the ball, and in her hurry, one of her glass slippers fell off her feet. The prince found this slipper and vowed to marry the girl who the slipper belonged to.",
+        "The prince reached Cinderella's house. Though her family tried to keep her away, the glass slipper was a perfect fit! She was married to the prince and lived happily ever after. Keeping a humble attitude reaps rewards."
+      ]
+    },
+    {
+      title: "The Little Mermaid 🧜‍♀️",
+      pages: [
+        "In the underwater kingdom of Atlantica, the home of the mer-people, lived a little mermaid who loved nothing more than to look at the surface and observe how the humans lived.",
+        "She longed to be human, and when she ended up rescuing a handsome prince from drowning, she decided that she must become human at any cost, as she wanted to be with him.",
+        "This led her to visit a sea witch who asked the mermaid to sacrifice her voice in exchange for human legs. The condition was that she would return as a slave if the prince did not marry her.",
+        "The mermaid went to her prince but faced many challenges, ranging from the prince not recognising her to other suitors coming forward to marry him.",
+        "However, at the end, both the mermaid and prince reunite, defeating the witch and living happily ever after. Be brave enough to step into a life that is different to get what your heart longs for."
+      ]
+    }
+  ];
+
+  let currentQuestions = [], currentIndex = 0, score = 0, timer, timeLeft = 10, currentLevel = 1, flashIndex = 0;
+  let currentBookIdx = 0, currentPageIdx = 0;
+
+  window.onload = () => {
+    const dailyWords = [{en: "Resilient", id: "Tangguh"}, {en: "Enthusiastic", id: "Semangat"}, {en: "Curious", id: "Ingin Tahu"}];
+    const rw = dailyWords[Math.floor(Math.random()*dailyWords.length)];
+    document.getElementById('word-display').innerText = `${rw.en} = ${rw.id}`;
+    updateBadgeDisplay();
+  };
+
+  function setAvatar(av, el) {
+    document.getElementById('selected-avatar-display').innerText = av;
+    document.querySelectorAll('.avatar-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function showHome() {
+    document.querySelectorAll('.quiz-container > div').forEach(d => d.classList.add('hidden'));
+    document.getElementById('home-screen').classList.remove('hidden');
+  }
+
+  function goToLevelSelect() {
+    document.getElementById('home-screen').classList.add('hidden');
+    document.getElementById('level-select').classList.remove('hidden');
+    document.getElementById('bgMusic').play().catch(()=>{});
+  }
+
+  function goToStoryMenu() {
+    document.querySelectorAll('.quiz-container > div').forEach(d => d.classList.add('hidden'));
+    document.getElementById('story-menu').classList.remove('hidden');
+  }
+
+  function openBook(idx) {
+    currentBookIdx = idx; currentPageIdx = 0;
+    document.getElementById('story-menu').classList.add('hidden');
+    document.getElementById('story-reader').classList.remove('hidden');
+    document.getElementById('story-title').innerText = books[idx].title;
+    updatePage();
+  }
+  function updatePage() {
+    document.getElementById('page-content').innerText = books[currentBookIdx].pages[currentPageIdx];
+    document.getElementById('page-num-display').innerText = `Page ${currentPageIdx + 1} / ${books[currentBookIdx].pages.length}`;
+  }
+  function nextPage() { if(currentPageIdx < books[currentBookIdx].pages.length - 1) { currentPageIdx++; updatePage(); } }
+  function prevPage() { if(currentPageIdx > 0) { currentPageIdx--; updatePage(); } }
+
+  function startStudy(lvl) {
+    currentLevel = lvl; flashIndex = 0;
+    document.getElementById('level-select').classList.add('hidden');
+    document.getElementById('study-screen').classList.remove('hidden');
+    document.getElementById('study-next-btn').className = `btn btn-lvl${lvl}`;
+    showFlashcard();
+  }
+  function showFlashcard() {
+    const data = allLevels[currentLevel][flashIndex];
+    document.getElementById('flash-emoji').innerText = data.i;
+    document.getElementById('flash-word').innerText = data.c;
+  }
+  function nextFlashcard() { flashIndex++; if(flashIndex < 3) showFlashcard(); else startQuiz(currentLevel); }
+
+  function startQuiz(lvl) {
+    document.getElementById('study-screen').classList.add('hidden');
+    document.getElementById('quiz-area').classList.remove('hidden');
+    currentQuestions = allLevels[lvl]; currentIndex = 0; score = 0;
+    showQuestion();
+  }
+
+  function showQuestion() {
+    if(currentIndex >= 10) { clearInterval(timer); showResult(); return; }
+    timeLeft = 10; document.getElementById('timer-display').innerText = timeLeft;
+    clearInterval(timer);
+    timer = setInterval(() => {
+      timeLeft--; document.getElementById('timer-display').innerText = timeLeft;
+      if(timeLeft <= 0) { currentIndex++; showQuestion(); }
+    }, 1000);
+    const q = currentQuestions[currentIndex];
+    document.getElementById('image-placeholder').innerText = q.i;
+    document.getElementById('question-text').innerText = q.q;
+    const container = document.getElementById('options-container');
+    container.innerHTML = '';
+    [...q.a].sort(() => Math.random() - 0.5).forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = `btn btn-lvl${currentLevel}`;
+      btn.innerText = opt;
+      btn.onclick = () => {
+        if(opt === q.c) { score += 10; document.getElementById('correctSound').play(); }
+        else { document.getElementById('wrongSound').play(); }
+        currentIndex++; showQuestion();
+      };
+      container.appendChild(btn);
+    });
+  }
+
+  function showResult() {
+    document.getElementById('quiz-area').classList.add('hidden');
+    document.getElementById('result-area').classList.remove('hidden');
+    document.getElementById('score-val').innerText = score;
+    if(score === 100) { confetti({ particleCount: 150 }); saveBadge(currentLevel); }
+  }
+
+  function showRanking() {
+    document.getElementById('home-screen').classList.add('hidden');
+    document.getElementById('rank-screen').classList.remove('hidden');
+    const container = document.getElementById('rank-content');
+    container.innerHTML = '';
+    const levels = ["Level 1: Colors 🎨", "Level 2: Animals 🐶", "Level 3: Actions 🏃", "Level 4: Master 👑"];
+    levels.forEach((lvlName, idx) => {
+        const lvlNum = idx + 1;
+        const data = JSON.parse(localStorage.getItem(`scores_lvl_${lvlNum}`) || "[]");
+        let html = `<div class="rank-section"><div class="rank-title">${lvlName}</div>`;
+        if(data.length === 0) html += `<div style="color:#999; font-size:0.8rem;">No scores yet.</div>`;
+        else data.forEach((s, i) => html += `<div style="font-size:0.9rem;">${i+1}. ${s.name} - ${s.score} pts</div>`);
+        html += `</div>`;
+        container.innerHTML += html;
+    });
+  }
+
+  function saveScore() {
+    const name = document.getElementById('playerName').value || "Guest";
+    localStorage.setItem(`scores_lvl_${currentLevel}`, JSON.stringify([...JSON.parse(localStorage.getItem(`scores_lvl_${currentLevel}`) || "[]"), {name, score}].sort((a,b)=>b.score-a.score).slice(0,5)));
+    location.reload();
+  }
+
+  function saveBadge(lvl) {
+    let b = JSON.parse(localStorage.getItem('badges') || "[]");
+    if(!b.includes(lvl)) b.push(lvl);
+    localStorage.setItem('badges', JSON.stringify(b));
+  }
+  function updateBadgeDisplay() {
+    let b = JSON.parse(localStorage.getItem('badges') || "[]");
+    const icons = document.querySelectorAll('.badge');
+    b.forEach(lvl => { if(icons[lvl-1]) icons[lvl-1].classList.add('unlocked'); });
+  }
+  function toggleCredits() {
+    const m = document.getElementById('credits-modal');
+    m.style.display = (m.style.display === 'flex' ? 'none' : 'flex');
+  }
+</script>
+</body>
+</html>
